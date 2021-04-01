@@ -1,0 +1,69 @@
+<style>
+	tr:first-child {
+		background-color : light-grey
+	}
+	td {
+		padding: 6px;
+		margin: 0px;
+		border-top: solid;
+		border-color: blue;
+	}
+</style>
+<table id="logger"></table>
+
+<script>
+
+var ipGetterURL = "/ip";
+var interval = 60 ; //seconds
+
+logs = JSON.parse(localStorage.history || '[{"ts":"Time","client":"My IP"}]');
+
+var logger = document.getElementById("logger");
+
+function clear(){
+	delete localStorage.history;
+}
+
+function log2Row(j){
+	var a = document.createElement('td');
+	var b = document.createElement('td');
+	a.innerText = j.ts;
+	b.innerText = j.client;
+	var tr = document.createElement('tr');
+	tr.append(a);
+	tr.append(b);
+	return tr.outerHTML;
+}
+
+function paint(){
+	var logList = logs.map(x => log2Row(x));
+	logger.innerHTML = logList.join("");
+}
+
+function log(msg){
+	var date = new Date();
+	var ts = [date.getHours(), date.getMinutes(), date.getSeconds()].join(":");
+	msg.ts = ts;
+	logs.push(msg);
+	paint();
+	localStorage.history = JSON.stringify(logs);
+}
+
+function ping(){
+	fetch(ipGetterURL).then(resp => resp.json()).then(data => log(data));
+}
+
+function start(){
+	ping();
+	setInterval(ping, interval * 1E3);
+}
+
+start();
+
+
+
+
+
+
+
+</script>
